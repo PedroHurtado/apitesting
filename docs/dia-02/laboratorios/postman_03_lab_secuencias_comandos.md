@@ -1130,6 +1130,4 @@ Una vez completado este laboratorio, estás preparado para el tema final:
 
 ---
 
-**¡Excelente trabajo completando este laboratorio avanzado!**
 
-*Laboratorio generado para el curso de API Testing - Postman y SoapUI*

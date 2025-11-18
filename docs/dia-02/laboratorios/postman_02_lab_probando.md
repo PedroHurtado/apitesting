@@ -735,6 +735,3 @@ Una vez completado este laboratorio, estarás preparado para:
 
 ---
 
-**¡Excelente trabajo completando este laboratorio!**
-
-*Laboratorio generado para el curso de API Testing - Postman y SoapUI*
