@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Pruebas de Notificaciones</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-weight: 500;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status.warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+
+    .test-section {
+      margin: 30px 0;
+      padding: 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+    }
+
+    .test-section h2 {
+      color: #555;
+      margin-bottom: 15px;
+      font-size: 1.3em;
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .test-card {
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fafafa;
+      transition: all 0.3s;
+    }
+
+    .test-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+
+    .test-card h3 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+
+    .test-card p {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 500;
+      transition: background 0.3s;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background: #6c757d;
+    }
+
+    button.secondary:hover {
+      background: #545b62;
+    }
+
+    button.danger {
+      background: #dc3545;
+    }
+
+    button.danger:hover {
+      background: #c82333;
+    }
+
+    .results {
+      margin-top: 30px;
+    }
+
+    .result-item {
+      padding: 15px;
+      margin: 10px 0;
+      border-left: 4px solid #007bff;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+
+    .result-item.good {
+      border-left-color: #28a745;
+    }
+
+    .result-item.warning {
+      border-left-color: #ffc107;
+    }
+
+    .result-item.bad {
+      border-left-color: #dc3545;
+    }
+
+    .metric {
+      display: inline-block;
+      margin-right: 15px;
+      font-weight: 600;
+    }
+
+    .instructions {
+      background: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+
+    .instructions ol {
+      margin-left: 20px;
+      margin-top: 10px;
+    }
+
+    .instructions li {
+      margin: 8px 0;
+      line-height: 1.5;
+    }
+
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.9em;
+    }
+
+    .token-display {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+      word-break: break-all;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Panel de Pruebas de Notificaciones Push</h1>
+    <p style="color: #666; margin-top: 10px;">Sistema de diagnóstico de latencia FCM</p>
+
+    <div id="status" class="status" style="display: none;"></div>
+
+    <div class="instructions">
+      <h3>📋 Instrucciones de Uso</h3>
+      <ol>
+        <li><strong>Registrar dispositivo:</strong> Haz clic en "Solicitar Permisos" para obtener el token FCM</li>
+        <li><strong>Preparar escenarios:</strong> Lee las descripciones de cada escenario antes de ejecutar</li>
+        <li><strong>Ejecutar pruebas:</strong> Sigue las instrucciones de cada escenario (apagar pantalla, esperar tiempo, etc.)</li>
+        <li><strong>Observar resultados:</strong> Los resultados aparecerán automáticamente cuando se reciban las notificaciones</li>
+        <li><strong>Exportar datos:</strong> Al finalizar, exporta los resultados para análisis</li>
+      </ol>
+    </div>
+
+    <!-- Sección de Setup -->
+    <div class="test-section">
+      <h2>1️⃣ Configuración Inicial</h2>
+      <div class="test-grid">
+        <div class="test-card">
+          <h3>🔔 Permisos de Notificación</h3>
+          <p>Estado: <span id="permission-status">No solicitado</span></p>
+          <button onclick="requestNotificationPermission()">Solicitar Permisos</button>
+        </div>
+        <div class="test-card">
+          <h3>📱 Token del Dispositivo</h3>
+          <p>Necesario para enviar notificaciones</p>
+          <div id="token-display" class="token-display" style="display: none;"></div>
+          <button onclick="copyToken()" id="copy-token-btn" style="display: none;">Copiar Token</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de Pruebas -->
+    <div class="test-section">
+      <h2>2️⃣ Escenarios de Prueba</h2>
+      
+      <div class="test-grid">
+        <!-- Escenario A -->
+        <div class="test-card">
+          <h3>✅ Escenario A: Dispositivo Activo</h3>
+          <p>
+            <strong>Condiciones:</strong><br>
+            • Pantalla encendida<br>
+            • App en primer plano<br>
+            • Esperado: &lt;2 segundos
+          </p>
+          <button onclick="runTest('active', 'web')">Ejecutar Test A</button>
+        </div>
+
+        <!-- Escenario B -->
+        <div class="test-card">
+          <h3>⏰ Escenario B: Background 5min</h3>
+          <p>
+            <strong>Instrucciones:</strong><br>
+            1. Haz clic en "Iniciar Test B"<br>
+            2. Apaga la pantalla<br>
+            3. Espera 5 minutos<br>
+            4. Observa cuándo llega
+          </p>
+          <button onclick="runDelayedTest('background-5min', 'web', 5)">Iniciar Test B</button>
+        </div>
+
+        <!-- Escenario C -->
+        <div class="test-card">
+          <h3>😴 Escenario C: Background 30min</h3>
+          <p>
+            <strong>Instrucciones:</strong><br>
+            1. Haz clic en "Iniciar Test C"<br>
+            2. Apaga la pantalla<br>
+            3. Espera 30 minutos<br>
+            4. Observa cuándo llega
+          </p>
+          <button onclick="runDelayedTest('background-30min', 'web', 30)">Iniciar Test C</button>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <button class="secondary" onclick="runAllTests()">▶️ Ejecutar Todos los Escenarios</button>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="test-section results">
+      <h2>3️⃣ Resultados</h2>
+      <div id="results-container">
+        <p style="color: #999;">No hay resultados aún. Ejecuta algunas pruebas.</p>
+      </div>
+      <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <button class="secondary" onclick="loadResults()" style="flex: 1;">🔄 Actualizar Resultados</button>
+        <button class="secondary" onclick="exportResults()" style="flex: 1;">💾 Exportar JSON</button>
+        <button class="secondary" onclick="viewReport()" style="flex: 1;">📊 Ver Reporte</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js';
+
+    // Tu configuración de Firebase
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_AUTH_DOMAIN",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_STORAGE_BUCKET",
+      messagingSenderId: "TU_MESSAGING_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
+
+    let deviceToken = null;
+    const API_BASE = 'https://tu-backend.com/api/test'; // Cambia esto
+
+    // Exponer funciones globalmente
+    window.requestNotificationPermission = requestNotificationPermission;
+    window.copyToken = copyToken;
+    window.runTest = runTest;
+    window.runDelayedTest = runDelayedTest;
+    window.runAllTests = runAllTests;
+    window.loadResults = loadResults;
+    window.exportResults = exportResults;
+    window.viewReport = viewReport;
+
+    // Solicitar permisos
+    async function requestNotificationPermission() {
+      try {
+        const permission = await Notification.requestPermission();
+        document.getElementById('permission-status').textContent = permission;
+
+        if (permission === 'granted') {
+          showStatus('✅ Permisos concedidos. Obteniendo token...', 'success');
+          
+          const token = await getToken(messaging, {
+            vapidKey: 'TU_VAPID_KEY' // Cambia esto
+          });
+
+          deviceToken = token;
+          document.getElementById('token-display').textContent = token;
+          document.getElementById('token-display').style.display = 'block';
+          document.getElementById('copy-token-btn').style.display = 'block';
+
+          showStatus('✅ Token obtenido correctamente', 'success');
+
+          // Registrar listener de mensajes en foreground
+          onMessage(messaging, (payload) => {
+            console.log('📩 Mensaje recibido en foreground:', payload);
+            handleNotificationReceived(payload);
+          });
+        } else {
+          showStatus('❌ Permisos denegados', 'error');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showStatus(`❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    function copyToken() {
+      navigator.clipboard.writeText(deviceToken);
+      showStatus('📋 Token copiado al portapapeles', 'success');
+    }
+
+    async function runTest(scenario, deviceType) {
+      if (!deviceToken) {
+        showStatus('❌ Primero debes obtener el token del dispositivo', 'error');
+        return;
+      }
+
+      showStatus(`🚀 Enviando notificación de prueba: ${scenario}...`, 'warning');
+
+      try {
+        const response = await fetch(`${API_BASE}/send-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deviceToken,
+            scenario,
+            deviceType
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showStatus(`✅ Test enviado: ${data.testId}`, 'success');
+        } else {
+          showStatus(`❌ Error: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showStatus(`❌ Error de red: ${error.message}`, 'error');
+      }
+    }
+
+    async function runDelayedTest(scenario, deviceType, delayMinutes) {
+      if (!deviceToken) {
+        showStatus('❌ Primero debes obtener el token del dispositivo', 'error');
+        return;
+      }
+
+      const confirmed = confirm(
+        `Este test enviará la notificación en ${delayMinutes} minutos.\n\n` +
+        `INSTRUCCIONES:\n` +
+        `1. Haz clic en OK\n` +
+        `2. Espera a que se envíe la notificación\n` +
+        `3. APAGA LA PANTALLA inmediatamente\n` +
+        `4. Espera y observa cuándo llega la notificación\n\n` +
+        `¿Continuar?`
+      );
+
+      if (!confirmed) return;
+
+      showStatus(`⏰ Programado: notificación se enviará en ${delayMinutes} minutos`, 'warning');
+
+      setTimeout(async () => {
+        await runTest(scenario, deviceType);
+        showStatus(
+          `📤 Notificación enviada. APAGA LA PANTALLA AHORA y espera...`,
+          'warning'
+        );
+      }, delayMinutes * 60 * 1000);
+    }
+
+    async function runAllTests() {
+      if (!deviceToken) {
+        showStatus('❌ Primero debes obtener el token del dispositivo', 'error');
+        return;
+      }
+
+      const confirmed = confirm(
+        'Esto ejecutará todos los escenarios secuencialmente:\n\n' +
+        '1. Test A (inmediato)\n' +
+        '2. Test B (en 5 minutos - apaga pantalla)\n' +
+        '3. Test C (en 35 minutos - apaga pantalla)\n\n' +
+        '¿Continuar?'
+      );
+
+      if (!confirmed) return;
+
+      // Test A - inmediato
+      await runTest('active', 'web');
+
+      // Test B - 5 minutos
+      showStatus('⏰ Test B programado para 5 minutos', 'warning');
+      setTimeout(() => {
+        runTest('background-5min', 'web');
+        showStatus('📤 Test B enviado. APAGA LA PANTALLA', 'warning');
+      }, 5 * 60 * 1000);
+
+      // Test C - 35 minutos (30 + 5 del anterior)
+      showStatus('⏰ Test C programado para 35 minutos', 'warning');
+      setTimeout(() => {
+        runTest('background-30min', 'web');
+        showStatus('📤 Test C enviado. Mantén pantalla apagada', 'warning');
+      }, 35 * 60 * 1000);
+    }
+
+    async function loadResults() {
+      try {
+        const response = await fetch(`${API_BASE}/results`);
+        const data = await response.json();
+
+        if (data.success && data.results.length > 0) {
+          displayResults(data.results);
+        } else {
+          document.getElementById('results-container').innerHTML =
+            '<p style="color: #999;">No hay resultados disponibles</p>';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showStatus(`❌ Error cargando resultados: ${error.message}`, 'error');
+      }
+    }
+
+    function displayResults(results) {
+      const container = document.getElementById('results-container');
+      container.innerHTML = '';
+
+      results.forEach(result => {
+        const latencyClass = !result.latency ? '' :
+          result.latency < 2000 ? 'good' :
+          result.latency < 30000 ? 'warning' : 'bad';
+
+        const latencyText = result.latency ?
+          `${(result.latency / 1000).toFixed(2)}s` :
+          result.status === 'pending' ? 'Pendiente...' : 'Timeout';
+
+        const html = `
+          <div class="result-item ${latencyClass}">
+            <strong>${result.scenario}</strong> (${result.deviceType})
+            <br>
+            <span class="metric">Latencia: ${latencyText}</span>
+            <span class="metric">Estado: ${result.status}</span>
+            <span class="metric">ID: ${result.testId.substring(0, 8)}</span>
+          </div>
+        `;
+
+        container.innerHTML += html;
+      });
+    }
+
+    async function exportResults() {
+      try {
+        const response = await fetch(`${API_BASE}/export`);
+        const data = await response.json();
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+          type: 'application/json'
+        });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `notification-tests-${Date.now()}.json`;
+        a.click();
+
+        showStatus('💾 Resultados exportados', 'success');
+      } catch (error) {
+        console.error('Error:', error);
+        showStatus(`❌ Error exportando: ${error.message}`, 'error');
+      }
+    }
+
+    async function viewReport() {
+      try {
+        const response = await fetch(`${API_BASE}/report`);
+        const report = await response.text();
+
+        const win = window.open('', '_blank');
+        win.document.write(`<pre>${report}</pre>`);
+      } catch (error) {
+        console.error('Error:', error);
+        showStatus(`❌ Error generando reporte: ${error.message}`, 'error');
+      }
+    }
+
+    function handleNotificationReceived(payload) {
+      const data = payload.data;
+      
+      if (data && data.isTest === 'true') {
+        const receiveTime = Date.now();
+        
+        // Reportar al backend
+        fetch(`${API_BASE}/receive-notification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            testId: data.testId,
+            receiveTime
+          })
+        }).then(() => {
+          loadResults(); // Actualizar resultados automáticamente
+        });
+      }
+    }
+
+    function showStatus(message, type) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, 5000);
+    }
+
+    // Auto-cargar resultados cada 10 segundos
+    setInterval(loadResults, 10000);
+  </script>
+</body>
+</html>
