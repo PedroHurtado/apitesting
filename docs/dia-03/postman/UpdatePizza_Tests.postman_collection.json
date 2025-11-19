@@ -1,0 +1,670 @@
+{
+	"info": {
+		"_postman_id": "update-pizza-tests",
+		"name": "Update Pizza - Tests",
+		"description": "Colección de tests para el endpoint PUT /pizzas/{id}",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://localhost:7000",
+			"type": "string"
+		},
+		{
+			"key": "existingPizzaId",
+			"value": "00000000-0000-0000-0000-000000000001",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "01 - Update Pizza - Success",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response tiene la estructura correcta\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData).to.have.property('name');",
+							"    pm.expect(jsonData).to.have.property('description');",
+							"    pm.expect(jsonData).to.have.property('url');",
+							"    pm.expect(jsonData).to.have.property('price');",
+							"    pm.expect(jsonData).to.have.property('ingredients');",
+							"});",
+							"",
+							"pm.test(\"Los datos se actualizaron correctamente\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.name).to.eql(\"Pizza Margherita Actualizada\");",
+							"    pm.expect(jsonData.description).to.eql(\"Deliciosa pizza con tomate, mozzarella y albahaca fresca\");",
+							"    pm.expect(jsonData.url).to.eql(\"https://example.com/pizzas/margherita-updated.jpg\");",
+							"});",
+							"",
+							"pm.test(\"El ID no cambió\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.id).to.eql(pm.collectionVariables.get(\"existingPizzaId\"));",
+							"});",
+							"",
+							"pm.test(\"Price es un número decimal mayor que 0\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.price).to.be.a('number');",
+							"    pm.expect(jsonData.price).to.be.above(0);",
+							"});",
+							"",
+							"pm.test(\"Ingredients es un array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.ingredients).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Pizza Margherita Actualizada\",\n  \"description\": \"Deliciosa pizza con tomate, mozzarella y albahaca fresca\",\n  \"url\": \"https://example.com/pizzas/margherita-updated.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test de actualización exitosa de una pizza existente"
+			},
+			"response": []
+		},
+		{
+			"name": "02 - Update Pizza - Name Required",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contiene error de validación\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Error indica que el nombre es requerido\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var errorMessage = JSON.stringify(jsonData).toLowerCase();",
+							"    pm.expect(errorMessage).to.include('nombre');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"\",\n  \"description\": \"Deliciosa pizza con tomate, mozzarella y albahaca fresca\",\n  \"url\": \"https://example.com/pizzas/margherita.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test de validación: Name no puede estar vacío"
+			},
+			"response": []
+		},
+		{
+			"name": "03 - Update Pizza - Name Max Length",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contiene error de validación\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Error indica límite de caracteres\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var errorMessage = JSON.stringify(jsonData).toLowerCase();",
+							"    pm.expect(errorMessage).to.satisfy(function(msg) {",
+							"        return msg.includes('100') || msg.includes('caracteres') || msg.includes('exceder');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Este es un nombre extremadamente largo que definitivamente excede los cien caracteres permitidos para el campo nombre de pizza y debería fallar la validación\",\n  \"description\": \"Deliciosa pizza con tomate, mozzarella y albahaca fresca\",\n  \"url\": \"https://example.com/pizzas/margherita.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test de validación: Name no puede exceder 100 caracteres"
+			},
+			"response": []
+		},
+		{
+			"name": "04 - Update Pizza - Description Required",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contiene error de validación\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Error indica que la descripción es requerida\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var errorMessage = JSON.stringify(jsonData).toLowerCase();",
+							"    pm.expect(errorMessage).to.include('descripción');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Pizza Margherita\",\n  \"description\": \"\",\n  \"url\": \"https://example.com/pizzas/margherita.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test de validación: Description no puede estar vacía"
+			},
+			"response": []
+		},
+		{
+			"name": "05 - Update Pizza - Description Max Length",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contiene error de validación\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Error indica límite de caracteres\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var errorMessage = JSON.stringify(jsonData).toLowerCase();",
+							"    pm.expect(errorMessage).to.satisfy(function(msg) {",
+							"        return msg.includes('250') || msg.includes('caracteres') || msg.includes('exceder');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Pizza Margherita\",\n  \"description\": \"Esta es una descripción extremadamente larga que definitivamente excede los doscientos cincuenta caracteres permitidos para el campo descripción. Vamos a seguir escribiendo más texto para asegurarnos de que realmente sobrepasamos el límite establecido y así poder probar correctamente la validación de longitud máxima\",\n  \"url\": \"https://example.com/pizzas/margherita.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test de validación: Description no puede exceder 250 caracteres"
+			},
+			"response": []
+		},
+		{
+			"name": "06 - Update Pizza - Url Required",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contiene error de validación\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Error indica que la URL es requerida\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var errorMessage = JSON.stringify(jsonData).toLowerCase();",
+							"    pm.expect(errorMessage).to.include('url');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Pizza Margherita\",\n  \"description\": \"Deliciosa pizza con tomate, mozzarella y albahaca fresca\",\n  \"url\": \"\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test de validación: Url no puede estar vacía"
+			},
+			"response": []
+		},
+		{
+			"name": "07 - Update Pizza - Invalid Url Format",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contiene error de validación\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Error indica que la URL no es válida\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var errorMessage = JSON.stringify(jsonData).toLowerCase();",
+							"    pm.expect(errorMessage).to.satisfy(function(msg) {",
+							"        return msg.includes('url') && (msg.includes('válida') || msg.includes('valida') || msg.includes('inválida') || msg.includes('invalida'));",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Pizza Margherita\",\n  \"description\": \"Deliciosa pizza con tomate, mozzarella y albahaca fresca\",\n  \"url\": \"esto-no-es-una-url-valida\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test de validación: Url debe tener formato válido (http/https)"
+			},
+			"response": []
+		},
+		{
+			"name": "08 - Update Pizza - Url Without Http Scheme",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contiene error de validación\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Error indica que la URL no es válida\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var errorMessage = JSON.stringify(jsonData).toLowerCase();",
+							"    pm.expect(errorMessage).to.satisfy(function(msg) {",
+							"        return msg.includes('url') && (msg.includes('válida') || msg.includes('valida') || msg.includes('inválida') || msg.includes('invalida'));",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Pizza Margherita\",\n  \"description\": \"Deliciosa pizza con tomate, mozzarella y albahaca fresca\",\n  \"url\": \"ftp://example.com/pizzas/margherita.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test de validación: Url debe usar esquema http o https (no ftp, file, etc)"
+			},
+			"response": []
+		},
+		{
+			"name": "09 - Update Pizza - Url Max Length",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contiene error de validación\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"});",
+							"",
+							"pm.test(\"Error indica límite de caracteres\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    var errorMessage = JSON.stringify(jsonData).toLowerCase();",
+							"    pm.expect(errorMessage).to.satisfy(function(msg) {",
+							"        return msg.includes('500') || msg.includes('caracteres') || msg.includes('exceder');",
+							"    });",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Pizza Margherita\",\n  \"description\": \"Deliciosa pizza con tomate, mozzarella y albahaca fresca\",\n  \"url\": \"https://example.com/pizzas/esta-es-una-url-extremadamente-larga-que-definitivamente-excede-los-quinientos-caracteres-permitidos-para-el-campo-url-vamos-a-seguir-escribiendo-mas-texto-para-asegurarnos-de-que-realmente-sobrepasamos-el-limite-establecido-y-asi-poder-probar-correctamente-la-validacion-de-longitud-maxima-continuamos-agregando-mas-caracteres-para-garantizar-que-superamos-ampliamente-los-quinientos-caracteres-permitidos-en-este-campo-de-url-y-verificar-que-la-validacion-funciona-correctamente-en-este-escenario-extremo.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test de validación: Url no puede exceder 500 caracteres"
+			},
+			"response": []
+		},
+		{
+			"name": "10 - Update Pizza - Not Found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Response contiene información del error\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('object');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Pizza Margherita\",\n  \"description\": \"Deliciosa pizza con tomate, mozzarella y albahaca fresca\",\n  \"url\": \"https://example.com/pizzas/margherita.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/99999999-9999-9999-9999-999999999999",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"99999999-9999-9999-9999-999999999999"
+					]
+				},
+				"description": "Test de error 404: Intento de actualizar una pizza que no existe"
+			},
+			"response": []
+		},
+		{
+			"name": "11 - Update Pizza - Invalid GUID Format",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 400 o 404\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+							"});",
+							"",
+							"pm.test(\"Response contiene información del error\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an('object');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Pizza Margherita\",\n  \"description\": \"Deliciosa pizza con tomate, mozzarella y albahaca fresca\",\n  \"url\": \"https://example.com/pizzas/margherita.jpg\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/invalid-guid-format",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"invalid-guid-format"
+					]
+				},
+				"description": "Test de error: ID con formato de GUID inválido"
+			},
+			"response": []
+		},
+		{
+			"name": "12 - Update Pizza - Multiple Validation Errors",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code es 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"pm.test(\"Response contiene múltiples errores de validación\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errors');",
+							"    ",
+							"    // Verificar que hay errores para múltiples campos",
+							"    var errorMessage = JSON.stringify(jsonData).toLowerCase();",
+							"    var errorCount = 0;",
+							"    ",
+							"    if (errorMessage.includes('nombre')) errorCount++;",
+							"    if (errorMessage.includes('descripción') || errorMessage.includes('descripcion')) errorCount++;",
+							"    if (errorMessage.includes('url')) errorCount++;",
+							"    ",
+							"    pm.expect(errorCount).to.be.at.least(2);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"\",\n  \"description\": \"\",\n  \"url\": \"invalid-url\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/pizzas/{{existingPizzaId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"pizzas",
+						"{{existingPizzaId}}"
+					]
+				},
+				"description": "Test con múltiples errores de validación simultáneos"
+			},
+			"response": []
+		}
+	]
+}
